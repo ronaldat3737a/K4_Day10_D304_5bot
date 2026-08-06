@@ -1,70 +1,97 @@
 from __future__ import annotations
 
 from datetime import datetime
-
+import re
 import pandas as pd
 
-from core.utils import compact_join, normalize_whitespace, write_json
 from ingestion.crossref import PaperRecord
 
 
 def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.DataFrame:
-    """TODO(student): clean raw records thanh dataframe san sang de embed.
+   """TODO(student): clean raw records thanh dataframe san sang de embed.
 
-    Pseudo-code:
-    1. Normalize title, summary, authors, categories.
-    2. Parse published/updated date.
-    3. Tinh age_days.
-    4. Tao cot helper:
-       - authors_joined
-       - categories_joined
-       - summary_chars
-       - text_for_embedding
-    5. Drop duplicates va filter row xau.
-    6. Sort dataframe va return.
-    """
-    rows: list[dict] = []
-    run_day = run_date.date()
-    for record in records:
-        paper_id = normalize_whitespace(record.paper_id)
-        title = normalize_whitespace(record.title)
-        summary = normalize_whitespace(record.summary)
-        if not paper_id or not title:
-            continue
-        published = pd.to_datetime(record.published, errors="coerce", utc=True)
-        updated = pd.to_datetime(record.updated, errors="coerce", utc=True)
-        if pd.isna(published):
-            continue
-        published_text = published.date().isoformat()
-        updated_text = updated.date().isoformat() if not pd.isna(updated) else published_text
-        authors = [normalize_whitespace(item) for item in (record.authors or []) if normalize_whitespace(item)]
-        categories = [normalize_whitespace(item) for item in (record.categories or []) if normalize_whitespace(item)]
-        authors_joined = compact_join(authors)
-        categories_joined = compact_join(categories)
-        text_for_embedding = normalize_whitespace(
-            f"{title}. {summary} Authors: {authors_joined}. Categories: {categories_joined}."
-        )
-        rows.append(
-            {
-                "paper_id": paper_id,
-                "title": title,
-                "summary": summary,
-                "authors": authors,
-                "categories": categories,
-                "primary_category": normalize_whitespace(record.primary_category),
-                "published": published_text,
-                "updated": updated_text,
-                "abs_url": normalize_whitespace(record.abs_url),
-                "pdf_url": normalize_whitespace(record.pdf_url),
-                "comment": normalize_whitespace(record.comment),
-                "authors_joined": authors_joined,
-                "categories_joined": categories_joined,
-                "summary_chars": len(summary),
-                "age_days": max(0, (run_day - published.date()).days),
-                "text_for_embedding": text_for_embedding,
-            }
-        )
-    if not rows:
-        return pd.DataFrame(columns=["paper_id", "title", "summary", "published", "age_days", "text_for_embedding"])
-    frame = pd.DataFrame(rows).drop_duplicates(subset=["paper_id"], keep="first")
-    return frame.sort_values(["published", "paper_id"], ascending=[False, True]).reset_index(drop=True)
+   Pseudo-code:
+   1. Normalize title, summary, authors, categories.
+   2. Parse published/updated date.
+   3. Tinh age_days.
+   4. Tao cot helper:
+      - authors_joined
+      - categories_joined
+      - summary_chars
+      - text_for_embedding
+   5. Drop duplicates va filter row xau.
+   6. Sort dataframe va return.
+   """
+   # Chuyển records thành list of dict
+   rows = []
+   for r in records:
+      # Chuẩn hóa text: strip whitespace và thay thế nhiều khoảng trắng bằng một space
+      title = re.sub(r'\s+', ' ', r.title.strip()) if r.title else ""
+      summary = re.sub(r'\s+', ' ', r.summary.strip()) if r.summary else ""
+      
+      # Chuẩn hóa authors: mỗi author strip và ghép lại
+      authors = [re.sub(r'\s+', ' ', a.strip()) for a in r.authors if a.strip()]
+      authors_joined = "; ".join(authors)
+      
+      # Chuẩn hóa categories: mỗi category strip và ghép lại
+      categories = [re.sub(r'\s+', ' ', c.strip()) for c in r.categories if c.strip()]
+      categories_joined = "; ".join(categories)
+      
+      # Xác thực và parse ngày
+      try:
+         published_dt = datetime.strptime(r.published, "%Y-%m-%d")
+      except ValueError:
+         published_dt = None  # Sẽ bị filtered sau
+      try:
+         updated_dt = datetime.strptime(r.updated, "%Y-%m-%d")
+      except ValueError:
+         updated_dt = None
+      
+      # Tính age_days chỉ nếu published_dt hợp lệ
+      age_days = (run_date - published_dt).days if published_dt else None
+      
+      # Tạo text_for_embedding: kết hợp title và summary
+      text_for_embedding = f"{title} {summary}".strip()
+      summary_chars = len(summary)
+      
+      rows.append({
+         "paper_id": r.paper_id,
+         "title": title,
+         "summary": summary,
+         "authors": authors,  # Giữ lại list để tiềm năng sử dụng sau
+         "authors_joined": authors_joined,
+         "categories": categories,  # Giữ lại list
+         "categories_joined": categories_joined,
+         "primary_category": r.primary_category.strip(),
+         "published": r.published,
+         "updated": r.updated,
+         "published_dt": published_dt,
+         "updated_dt": updated_dt,
+         "age_days": age_days,
+         "abs_url": r.abs_url,
+         "pdf_url": r.pdf_url,
+         "comment": r.comment,
+         "summary_chars": summary_chars,
+         "text_for_embedding": text_for_embedding
+      })
+   
+   if not rows:
+      return pd.DataFrame()
+   
+   df = pd.DataFrame(rows)
+   
+   # Filter bỏ bản ghi không hợp lệ: title rỗng, summary rỗng, hoặc published_dt không hợp lệ
+   df = df[
+      (df["title"].str.len() > 0) &
+      (df["summary"].str.len() > 0) &
+      (df["published_dt"].notna())
+   ].copy()
+   
+   # Drop trùng lặp dựa trên paper_id
+   df = df.drop_duplicates(subset=["paper_id"], keep="first")
+   
+   # Sắp xếp theo published_dt giảm dần (mới nhất trước)
+   df = df.sort_values("published_dt", ascending=False)
+   
+   # Đảm bảo các cột helper tồn tại (đã tạo ở trên)
+   return df

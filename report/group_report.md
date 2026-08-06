@@ -6,20 +6,20 @@
 
 | Thông tin         | Nội dung                  |
 | ------------------ | -------------------------- |
-| Khóa/Lớp         | [K3 hoặc K4]              |
-| Tên nhóm         | [Tên hoặc mã nhóm]     |
+| Khóa/Lớp         | K4              |
+| Tên nhóm         | 5Bot     |
 | Repository         | [Đường dẫn repository] |
-| Ngày hoàn thành | [YYYY-MM-DD]               |
+| Ngày hoàn thành | 2026-08-06               |
 
 ### Thành viên và phân công
 
-| STT | Họ và tên | MSSV | Vai trò chính | Module/deliverable sở hữu |
-| --: | --- | --- | --- | --- |
-| 1 | [Họ tên] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 2 | [Họ tên] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 3 | [Họ tên] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 4 | [Nếu có] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 5 | [Nếu có] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
+| STT | Thành viên | MSSV | Job |
+| --: | --- | --- | --- |
+| 1 | Nguyễn Công Đạt | 2A202601526 | Source owner |
+| 2 | Bùi Thái Sơn | 2A202601126 | Cleaning & test-set owner |
+| 3 | Tống Tiến Mạnh | 2A202601614 | Observability owner |
+| 4 | Nguyễn Văn Thắng | 2A202601580 | Corruption & repair owner |
+| 5 | Nguyễn Tiến Đạt | 2A202601850 | Pipeline integration & evidence owner |
 
 ## 2. Tóm tắt kết quả
 

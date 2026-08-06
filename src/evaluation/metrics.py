@@ -80,6 +80,8 @@ def _run_ragas(settings: Settings, answers: list[dict[str, Any]]) -> dict[str, A
             sys.modules["langchain_community.chat_models.vertexai"] = shim
         from ragas import evaluate
         from ragas.metrics import answer_relevancy, context_precision, context_recall, faithfulness
+        # THÊM DÒNG NÀY:
+        from ragas.run_config import RunConfig
 
         dataset = Dataset.from_dict(
             {
@@ -94,6 +96,8 @@ def _run_ragas(settings: Settings, answers: list[dict[str, Any]]) -> dict[str, A
             metrics=[answer_relevancy, context_precision, context_recall, faithfulness],
             llm=build_llm(settings=settings, temperature=0.0),
             embeddings=MiniLMEmbeddings(settings.embedding_model),
+            # THÊM DÒNG NÀY: Giới hạn chỉ chạy 1 luồng và cho phép thử lại nhiều lần nếu bị nghẽn mạng
+            run_config=RunConfig(max_workers=3, max_retries=15, max_wait=60)
         )
         return dict(result)
     except Exception as exc:  # pragma: no cover

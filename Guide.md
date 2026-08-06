@@ -46,6 +46,7 @@ CROSSREF_API_URL = "https://api.crossref.org/works"
 Crossref API là API công khai cung cấp metadata của các công bố học thuật có DOI: tiêu đề, tác giả, abstract, chủ đề, ngày xuất bản, URL, v.v.
 ```
 
+
 Cần hoàn thành:
 
 - `src/ingestion/crossref.py`

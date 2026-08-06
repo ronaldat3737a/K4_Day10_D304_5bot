@@ -1,0 +1,9 @@
+{
+  "row_count": 23,
+  "paper_id_not_null": true,
+  "paper_id_unique": false,
+  "title_not_null": true,
+  "summary_min_length_10": false,
+  "age_days_non_negative": true,
+  "age_days_reasonable": true
+}

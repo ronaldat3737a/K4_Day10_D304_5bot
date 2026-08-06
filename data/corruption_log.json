@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-08-06T15:31:09.963560",
+  "operations": [
+    "Dropped 2 latest records",
+    "Blanked summary for 3 rows",
+    "Injected noise into summary for 2 rows",
+    "Truncated title for 2 rows",
+    "Made published date older for 2 rows",
+    "Added 1 duplicate rows",
+    "Rebuilt text_for_embedding column"
+  ],
+  "original_row_count": 24,
+  "corrupted_row_count": 23,
+  "changes": {
+    "dropped_latest_count": 2,
+    "blanked_summary_count": 3,
+    "noise_injected_count": 2,
+    "truncated_title_count": 2,
+    "date_corrupted_count": 2,
+    "duplicate_rows_added": 1
+  }
+}

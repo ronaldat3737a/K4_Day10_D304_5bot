@@ -6,13 +6,13 @@
 
 | Thông tin         | Nội dung                  |
 | ------------------ | -------------------------- |
-| Họ và tên       | [Họ và tên]             |
-| MSSV               | [MSSV]                     |
-| Khóa/Lớp         | [K3 hoặc K4]              |
-| Tên nhóm         | [Tên hoặc mã nhóm]     |
+| Họ và tên       | Bùi Thái Sơn             |
+| MSSV               | 2A202601126                    |
+| Khóa/Lớp         | K4              |
+| Tên nhóm         | 5Bot     |
 | Vai trò chính    | [Vai trò]                 |
 | Repository         | [Đường dẫn repository] |
-| Ngày hoàn thành | [YYYY-MM-DD]               |
+| Ngày hoàn thành | 2026-08-06               |
 
 ## 2. Vai trò và phạm vi công việc
 
