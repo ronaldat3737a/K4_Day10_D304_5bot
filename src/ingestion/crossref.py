@@ -12,6 +12,9 @@ from core.config import Settings
 import json
 import time
 import requests
+import re
+
+from core.utils import normalize_whitespace
 
 # Constant for Crossref API
 CROSSREF_API_URL = "https://api.crossref.org/works"
@@ -44,23 +47,23 @@ def parse_crossref_payload(payload: dict) -> list[PaperRecord]:
     records = []
     items = payload.get("message", {}).get("items", [])
     for item in items:
-        doi = item.get("DOI")
+        doi = normalize_whitespace(str(item.get("DOI", ""))).lower()
         if not doi:
             continue
-        title = item.get("title", [""])[0] if item.get("title") else ""
-        abstract = item.get("abstract", "")
+        title = normalize_whitespace(str(item.get("title", [""])[0] if item.get("title") else ""))
+        abstract = normalize_whitespace(re.sub(r"<[^>]+>", " ", str(item.get("abstract", ""))))
         authors = []
         for author in item.get("author", []):
             given = author.get("given", "")
             family = author.get("family", "")
-            name = f"{given} {family}".strip()
+            name = normalize_whitespace(f"{given} {family}")
             if name:
                 authors.append(name)
-        subjects = item.get("subject", [])
+        subjects = [normalize_whitespace(str(value)) for value in item.get("subject", [])]
         primary_category = subjects[0] if subjects else ""
         # Xử lý ngày
         date_parts = None
-        for date_key in ["published-print", "published-online", "created"]:
+        for date_key in ["published", "published-print", "published-online", "created"]:
             if date_key in item and "date-parts" in item[date_key]:
                 date_parts = item[date_key]["date-parts"][0]
                 break
@@ -69,11 +72,11 @@ def parse_crossref_payload(payload: dict) -> list[PaperRecord]:
             month = f"{date_parts[1]:02d}" if len(date_parts) > 1 and date_parts[1] else "01"
             day = f"{date_parts[2]:02d}" if len(date_parts) > 2 and date_parts[2] else "01"
             published = f"{year}-{month}-{day}"
-            updated = published  # giả sử cùng ngày
+            updated = published
         else:
             published = "0000-01-01"
             updated = "0000-01-01"
-        abs_url = item.get("URL", "")
+        abs_url = normalize_whitespace(str(item.get("URL", "")))
         pdf_url = ""  # Crossref không cung cấp PDF trực tiếp
         comment = ""
         records.append(PaperRecord(

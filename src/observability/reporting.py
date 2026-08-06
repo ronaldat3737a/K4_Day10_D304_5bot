@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from core.utils import write_text
+
 
 def generate_phase1_report(
     report_path,
@@ -18,7 +20,8 @@ def generate_phase1_report(
     3. In data quality va freshness.
     4. Ghi markdown vao report_path.
     """
-    raise NotImplementedError("Student task: implement phase 1 report.")
+    lines = ["# Phase 1 Baseline Report", "", "## Source", f"- {source_summary}", "", "## Metrics", f"```json\n{metrics}\n```", "", "## Quality", f"```json\n{quality}\n```", "", "## Freshness", f"```json\n{freshness}\n```"]
+    write_text(report_path, "\n".join(lines) + "\n")
 
 
 def generate_corruption_report(
@@ -32,4 +35,13 @@ def generate_corruption_report(
     repaired_freshness: dict[str, Any],
 ) -> None:
     """TODO(student): viet markdown report so sanh baseline/corrupted/repaired."""
-    raise NotImplementedError("Student task: implement corruption comparison report.")
+    keys = ["retrieval_hit_rate", "mean_token_f1", "judge_accuracy", "mean_judge_score"]
+    lines = ["# Corruption and Repair Report", "", "| Metric | Baseline | Corrupted | Repaired |", "|---|---:|---:|---:|"]
+    for key in keys:
+        lines.append(f"| `{key}` | {baseline_metrics.get(key, 'N/A')} | {corrupted_metrics.get(key, 'N/A')} | {repaired_metrics.get(key, 'N/A')} |")
+    lines.extend([
+        "", "## Observability", "", f"- Baseline: quality assumed from baseline metrics; corrupted quality passed: `{corrupted_quality.get('passed')}`; repaired quality passed: `{repaired_quality.get('passed')}`.",
+        f"- Corrupted freshness: `{corrupted_freshness.get('is_fresh')}`; repaired freshness: `{repaired_freshness.get('is_fresh')}`.",
+        "", "## Interpretation", "", "The same evaluation set is used for all three states. Interpret metric changes together with the quality and freshness signals.",
+    ])
+    write_text(report_path, "\n".join(lines) + "\n")
