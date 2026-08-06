@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
@@ -48,6 +50,13 @@ def build_llm(settings: Settings, temperature: float = 0.0):
             model=settings.model_name,
             api_key=settings.custom_llm_api_key or "unused",
             base_url=settings.custom_llm_base_url,
+            temperature=temperature,
+        )
+    if provider == "shopaikey":
+        return ChatGoogleGenerativeAI(
+            model=settings.model_name,
+            api_key=settings.openai_api_key or os.getenv("AI_API_KEY") or "unused",
+            base_url="https://api.shopaikey.com/v1",
             temperature=temperature,
         )
     raise RuntimeError(f"Unsupported LLM provider: {settings.llm_provider}")

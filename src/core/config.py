@@ -168,6 +168,10 @@ def require_llm_credentials(settings: Settings) -> None:
         if settings.custom_llm_base_url:
             return
         raise RuntimeError("CUSTOM_LLM_BASE_URL is required when LLM_PROVIDER=custom.")
+    if provider == "shopaikey":
+        if settings.openai_api_key or os.getenv("SHOPAIKEY_API_KEY"):
+            return
+        raise RuntimeError("OPENAI_API_KEY or SHOPAIKEY_API_KEY is required when LLM_PROVIDER=shopaikey.")
     raise RuntimeError(
-        "Unsupported LLM_PROVIDER. Expected one of: openai, gemini, anthropic, openrouter, ollama, custom."
+        "Unsupported LLM_PROVIDER. Expected one of: openai, gemini, anthropic, openrouter, ollama, custom, shopaikey."
     )
